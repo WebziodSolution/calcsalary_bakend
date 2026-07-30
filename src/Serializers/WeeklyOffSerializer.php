@@ -1,0 +1,55 @@
+<?php
+namespace Common\Serializers;
+
+class WeeklyOffSerializer {
+    public $id;
+    public $name;
+    public $description;
+    public $isDefault;
+    public $sundayAll;
+    public $sunday1st;
+    public $sunday2nd;
+    public $sunday3rd;
+    public $sunday4th;
+    public $sunday5th;
+    public $mondayAll;
+    public $monday1st;
+    public $monday2nd;
+    public $monday3rd;
+    public $monday4th;
+    public $monday5th;
+    public $tuesdayAll;
+    public $tuesday1st;
+    public $tuesday2nd;
+    public $tuesday3rd;
+    public $tuesday4th;
+    public $tuesday5th;
+    public $wednesdayAll;
+    public $wednesday1st;
+    public $wednesday2nd;
+    public $wednesday3rd;
+    public $wednesday4th;
+    public $wednesday5th;
+    public $thursdayAll;
+    public $thursday1st;
+    public $thursday2nd;
+    public $thursday3rd;
+    public $thursday4th;
+    public $thursday5th;
+    public $fridayAll;
+    public $friday1st;
+    public $friday2nd;
+    public $friday3rd;
+    public $friday4th;
+    public $friday5th;
+    public $saturdayAll;
+    public $saturday1st;
+    public $saturday2nd;
+    public $saturday3rd;
+    public $saturday4th;
+    public $saturday5th;
+    public $companyId;
+    public $createdBy;
+    public $createdByUsername;
+    public $assignedEmployeeIds;
+}

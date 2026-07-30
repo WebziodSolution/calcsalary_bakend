@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Redirect HTTP to HTTPS
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^localhost(:\d+)?$ [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:\d+)?$
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+# Route all requests to index.php if not an existing file or directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Set Referrer-Policy header
+<IfModule mod_headers.c>
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
