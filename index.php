@@ -11,7 +11,7 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: *");
 }
 header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE, PATCH");
 if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
     header("Access-Control-Allow-Headers: " . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
 } else {
@@ -289,7 +289,7 @@ try {
         'GET#/weekly-off/get/(?P<id>[^/]+)' => ['WeeklyOffController', 'get_by_id'],
         'POST#/weekly-off/assignEmployees' => ['WeeklyOffController', 'assign_employees'],
         'POST#/weekly-off/create' => ['WeeklyOffController', 'create'],
-        'PUT#/weekly-off/update/(?P<id>[^/]+)' => ['WeeklyOffController', 'update'],
+        'PATCH#/weekly-off/update/(?P<id>[^/]+)' => ['WeeklyOffController', 'update'],
         'DELETE#/weekly-off/delete/(?P<id>[^/]+)' => ['WeeklyOffController', 'delete'],
         'GET#/weekly-off/assignDefaultTemplate/(?P<id>[^/]+)' => ['WeeklyOffController', 'assign_default_template'],
 
@@ -297,7 +297,7 @@ try {
         'GET#/holidayTemplates/get/all/(?P<id>\d+)' => ['HolidayTemplatesController', 'get_all_holiday_templates_by_company_id'],
         'GET#/holidayTemplates/get/(?P<id>\d+)' => ['HolidayTemplatesController', 'get_holiday_template'],
         'POST#/holidayTemplates/create' => ['HolidayTemplatesController', 'create_holiday_template'],
-        'PUT#/holidayTemplates/update/(?P<id>\d+)' => ['HolidayTemplatesController', 'update_holiday_template'],
+        'PATCH#/holidayTemplates/update/(?P<id>\d+)' => ['HolidayTemplatesController', 'update_holiday_template'],
         'DELETE#/holidayTemplates/delete/(?P<id>\d+)' => ['HolidayTemplatesController', 'delete_holiday_template'],
         'POST#/holidayTemplates/assignEmployees' => ['HolidayTemplatesController', 'assign_employees'],
 
@@ -313,7 +313,52 @@ try {
         'GET#/overtimerules/getOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'get_overtime_rule'],
         'POST#/overtimerules/createOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'create_overtime_rule'],
         'PATCH#/overtimerules/updateOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'update_overtime_rule'],
-        'DELETE#/overtimerules/deleteOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'delete_overtime_rule']
+        'DELETE#/overtimerules/deleteOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'delete_overtime_rule'],
+
+        // Attendance Penalty Rules
+        'GET#/attendancePenaltyRules/get/all/(?P<flag>[^/]+)/(?P<companyId>[^/]+)' => ['AttendancePenaltyRulesController', 'get_all_by_company_id'],
+        'GET#/attendancePenaltyRules/get/(?P<id>[^/]+)' => ['AttendancePenaltyRulesController', 'get_by_id'],
+        'POST#/attendancePenaltyRules/create' => ['AttendancePenaltyRulesController', 'create'],
+        'PUT#/attendancePenaltyRules/update/(?P<id>[^/]+)' => ['AttendancePenaltyRulesController', 'update'],
+        'DELETE#/attendancePenaltyRules/delete/(?P<id>[^/]+)' => ['AttendancePenaltyRulesController', 'delete'],
+
+        // UserInOut Routes
+        'GET#/inout/inoutreport' => ['UserInOutController', 'get_report'],
+        'GET#/inout/generateExcelReport' => ['UserInOutController', 'generate_excel_report'],
+        'GET#/inout/getDashboardData/(?P<companyId>[^/]+)' => ['UserInOutController', 'get_dashboard_data'],
+        'GET#/inout/getUserLastInOut/(?P<userId>[^/]+)' => ['UserInOutController', 'get_user_last_inout'],
+        'GET#/inout/getAllRecords' => ['UserInOutController', 'get_all_records'],
+        'GET#/inout/getAllRecordsGroupByUser' => ['UserInOutController', 'get_all_records_grouped_by_user'],
+        'GET#/inout/todayrecords' => ['UserInOutController', 'get_today_records'],
+        'GET#/inout/get/(?P<id>[^/]+)' => ['UserInOutController', 'get_user_inout'],
+        'POST#/inout/create' => ['UserInOutController', 'create_user_inout'],
+        'PUT#/inout/update/(?P<id>[^/]+)' => ['UserInOutController', 'update_user_inout_by_id'],
+        'PUT#/inout/update' => ['UserInOutController', 'update_user_inout_by_dto'],
+        'POST#/inout/clockInOut' => ['UserInOutController', 'clock_in_out'],
+        'POST#/inout/addClockInOut' => ['UserInOutController', 'add_clock_in_out'],
+        'POST#/inout/addBulk' => ['UserInOutController', 'add_bulk_clock_in_out'],
+        'DELETE#/inout/delete/(?P<id>[^/]+)' => ['UserInOutController', 'delete_user_inout'],
+
+        // Employee Salary Statements Routes
+        'POST#/employee/statement/getEmployeeSalaryStatements' => ['EmployeeSalaryStatementController', 'get_employee_salary_statements'],
+
+        // Salary Statement Master Routes
+        'GET#/statementMaster/getAllStatementMasters/(?P<id>[^/]+)' => ['SalaryStatementMasterController', 'get_all_statement_masters'],
+        'GET#/statementMaster/getAllStatementMasters' => ['SalaryStatementMasterController', 'get_statement_masters_by_month_and_year'],
+        'GET#/statementMaster/get/(?P<id>[^/]+)' => ['SalaryStatementMasterController', 'get_salary_statement_master_by_id'],
+        'POST#/statementMaster/create' => ['SalaryStatementMasterController', 'create_salary_statement_master'],
+        'PUT#/statementMaster/update/(?P<id>[^/]+)' => ['SalaryStatementMasterController', 'update_salary_statement_master'],
+        'DELETE#/statementMaster/delete/(?P<id>[^/]+)' => ['SalaryStatementMasterController', 'delete_salary_statement_master'],
+
+        // Salary Statement History Routes
+        'POST#/salaryStatementHistory/getAllHistory' => ['SalaryStatementHistoryController', 'filter_salary_statement_history'],
+        'GET#/salaryStatementHistory/getHistory/(?P<id>[^/]+)' => ['SalaryStatementHistoryController', 'get_salary_statement_history'],
+        'POST#/salaryStatementHistory/addHistory' => ['SalaryStatementHistoryController', 'create'],
+        'PUT#/salaryStatementHistory/updateHistory/(?P<id>[^/]+)' => ['SalaryStatementHistoryController', 'update'],
+        'DELETE#/salaryStatementHistory/deleteHistory/(?P<id>[^/]+)' => ['SalaryStatementHistoryController', 'delete'],
+
+        // Company Report Routes
+        'GET#/companyReport' => ['CompanyReportController', 'get_filtered_companies']
     ];
 
     // Normalize route lookup by removing trailing slash

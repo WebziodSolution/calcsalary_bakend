@@ -610,17 +610,28 @@ class UserService {
         $res_body = [];
         try {
             $token = $reset_password_dto['token'] ?? "";
-            $decoded_token = $this->base64UrlDecode($token);
-            $parts = explode(":", $decoded_token);
-            if (count($parts) !== 5) {
-                return [
-                    "message" => "Invalid token structure",
-                    "status" => 400
-                ];
-            }
+            if (!empty($token)) {
+                $decoded_token = $this->base64UrlDecode($token);
+                $parts = explode(":", $decoded_token);
+                if (count($parts) !== 5) {
+                    return [
+                        "message" => "Invalid token structure",
+                        "status" => 400
+                    ];
+                }
 
-            $company_no = $parts[0];
-            $user_id_str = $parts[1];
+                $company_no = $parts[0];
+                $user_id_str = $parts[1];
+            } else {
+                $company_no = $reset_password_dto['companyId'] ?? null;
+                $user_id_str = $reset_password_dto['employeeId'] ?? $reset_password_dto['userId'] ?? null;
+                if ($company_no === null || $user_id_str === null) {
+                    return [
+                        "message" => "Invalid token structure",
+                        "status" => 400
+                    ];
+                }
+            }
 
             $config = require __DIR__ . '/../../config/settings.php';
             $config_company_id = $config['companyId'] ?? '108108';

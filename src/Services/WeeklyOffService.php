@@ -99,7 +99,9 @@ class WeeklyOffService {
             $db->commit();
             return true;
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }
@@ -236,9 +238,11 @@ class WeeklyOffService {
 
             $weekly_off->companyDetails = $company_id;
             $weekly_off->companyEmployee = $created_by;
+            $weekly_off->name = $name;
+            $weekly_off->description = $dto['description'] ?? null;
 
             foreach ($dto as $key => $val) {
-                if (property_exists($weekly_off, $key) && !in_array($key, ["id", "isDefault", "companyId", "createdBy", "createdByUsername", "assignedEmployeeIds"])) {
+                if (property_exists($weekly_off, $key) && !in_array($key, ["id", "isDefault", "companyId", "createdBy", "createdByUsername", "assignedEmployeeIds", "name", "description"])) {
                     $weekly_off->$key = $val !== null ? (int)$val : 0;
                 }
             }
@@ -284,17 +288,14 @@ class WeeklyOffService {
 
             $company_employees = DbHelper::findAll(CompanyEmployee::class, "company_id = :comp_id", ["comp_id" => $weekly_off->companyDetails]);
             foreach ($company_employees as $emp) {
-                if ($emp->employeeType) {
-                    $type = DbHelper::findById(EmployeeType::class, $emp->employeeType);
-                    if ($type && $type->name === "Salaried") {
-                        $emp->weeklyOff = $weekly_off->id;
-                        DbHelper::update($emp);
-                    }
-                }
+                $emp->weeklyOff = $weekly_off->id;
+                DbHelper::update($emp);
             }
             $db->commit();
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }

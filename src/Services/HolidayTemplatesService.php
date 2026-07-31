@@ -91,7 +91,9 @@ class HolidayTemplatesService {
             $db->commit();
             return $this->get_holiday_template_by_id($entity->id);
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }
@@ -119,7 +121,6 @@ class HolidayTemplatesService {
 
             $entity->name = $dto['name'] ?? null;
             $entity->companyDetails = $company_id;
-            $entity->companyEmployee = $created_by;
             DbHelper::update($entity);
 
             $details_list = $dto['holidayTemplateDetailsList'] ?? [];
@@ -140,7 +141,9 @@ class HolidayTemplatesService {
             $db->commit();
             return $this->get_holiday_template_by_id($entity->id);
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }
@@ -191,14 +194,16 @@ class HolidayTemplatesService {
             $db->commit();
             return true;
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }
 
     public function get_assigned_employees($template_id) {
         try {
-            $employees = DbHelper::findAll(CompanyEmployee::class, "holiday_templates_id = :template_id", ["template_id" => $template_id]);
+            $employees = DbHelper::findAll(CompanyEmployee::class, "holiday_template = :template_id", ["template_id" => $template_id]);
             $ids = [];
             foreach ($employees as $emp) {
                 $ids[] = $emp->employeeId;

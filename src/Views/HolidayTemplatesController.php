@@ -66,7 +66,7 @@ class HolidayTemplatesController {
     public function assign_employees() {
         try {
             $input = array_merge($_GET, $_POST, json_decode(file_get_contents('php://input'), true) ?? []);
-            $template_id = $input['holidayTemplateId'] ?? 0;
+            $template_id = $input['holidayTemplateId'] ?? $input['id'] ?? 0;
             $employee_ids = $input['employeeIds'] ?? [];
             $remove_employee_ids = $input['removeEmployeeIds'] ?? [];
 

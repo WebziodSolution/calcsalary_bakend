@@ -77,7 +77,9 @@ class DeductionsService {
             }
             $db->commit();
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             throw new Exception($e->getMessage());
         }
     }
