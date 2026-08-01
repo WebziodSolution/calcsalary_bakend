@@ -19,6 +19,7 @@ if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
 }
 header("Referrer-Policy: strict-origin-when-cross-origin");
 
+
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -36,7 +37,6 @@ use Common\Auth\JWTAuthentication;
 use Common\Response\ApiResponse;
 use Common\Exception\GlobalException;
 use Common\Exception\ExceptionHandler;
-
 try {
     // 3. Run Client IP Restriction Middleware
     ClientIPRestrictionMiddleware::handle();
@@ -231,14 +231,15 @@ try {
         'GET#/location/get/(?P<id>\d+)' => ['LocationController', 'get_location'],
         'POST#/location/create' => ['LocationController', 'create_location'],
         'PUT#/location/update/(?P<id>\d+)' => ['LocationController', 'update_location'],
+        // 'PATCH#/location/update/(?P<id>\d+)' => ['LocationController', 'update_location'],
         'DELETE#/location/delete/(?P<id>\d+)' => ['LocationController', 'delete_location'],
 
         // Global LeaveType
-        'GET#/leavetype/get/all/(?P<companyId>\d+)' => ['LeaveTypeController', 'get_all_leave_types'],
-        'GET#/leavetype/get/(?P<id>\d+)' => ['LeaveTypeController', 'get_leave_type'],
-        'POST#/leavetype/create' => ['LeaveTypeController', 'create_leave_type'],
-        'PUT#/leavetype/update/(?P<id>\d+)' => ['LeaveTypeController', 'update_leave_type'],
-        'DELETE#/leavetype/delete/(?P<id>\d+)' => ['LeaveTypeController', 'delete_leave_type'],
+        'GET#/leaveType/get/all/(?P<companyId>\d+)' => ['LeaveTypeController', 'get_all_leave_types'],
+        'GET#/leaveType/get/(?P<id>\d+)' => ['LeaveTypeController', 'get_leave_type'],
+        'POST#/leaveType/create' => ['LeaveTypeController', 'create_leave_type'],
+        'PUT#/leaveType/update/(?P<id>\d+)' => ['LeaveTypeController', 'update_leave_type'],
+        'DELETE#/leaveType/delete/(?P<id>\d+)' => ['LeaveTypeController', 'delete_leave_type'],
 
         // Global Deductions
         'GET#/deductions/get/all' => ['DeductionsController', 'get_all_deductions'],
@@ -263,12 +264,12 @@ try {
         'DELETE#/employeeBankInfo/deletePassbookImage/(?P<companyId>\d+)/(?P<bankId>\d+)' => ['EmployeeBankAccountInfoController', 'delete_passbook_image'],
 
         // Global EmployeeLeaveMaster
-        'GET#/employeeleavemaster/get/all/(?P<companyId>\d+)' => ['EmployeeLeaveMasterController', 'get_all_employee_leave_masters'],
-        'GET#/employeeleavemaster/get/employee/(?P<employeeId>\d+)' => ['EmployeeLeaveMasterController', 'get_employee_leave_masters_by_employee'],
-        'GET#/employeeleavemaster/get/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'get_employee_leave_master'],
-        'POST#/employeeleavemaster/create' => ['EmployeeLeaveMasterController', 'create_employee_leave_master'],
-        'PUT#/employeeleavemaster/update/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'update_employee_leave_master'],
-        'DELETE#/employeeleavemaster/delete/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'delete_employee_leave_master'],
+        'GET#/employeeLeaveMaster/get/all/(?P<companyId>\d+)' => ['EmployeeLeaveMasterController', 'get_all_employee_leave_masters'],
+        'GET#/employeeLeaveMaster/get/employee/(?P<employeeId>\d+)' => ['EmployeeLeaveMasterController', 'get_employee_leave_masters_by_employee'],
+        'GET#/employeeLeaveMaster/get/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'get_employee_leave_master'],
+        'POST#/employeeLeaveMaster/create' => ['EmployeeLeaveMasterController', 'create_employee_leave_master'],
+        'PUT#/employeeLeaveMaster/update/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'update_employee_leave_master'],
+        'DELETE#/employeeLeaveMaster/delete/(?P<id>\d+)' => ['EmployeeLeaveMasterController', 'delete_employee_leave_master'],
 
         // Global EmployeeType
         'GET#/employeeType/get/All' => ['EmployeeTypeController', 'get_all_employee_types'],
@@ -289,7 +290,8 @@ try {
         'GET#/weekly-off/get/(?P<id>[^/]+)' => ['WeeklyOffController', 'get_by_id'],
         'POST#/weekly-off/assignEmployees' => ['WeeklyOffController', 'assign_employees'],
         'POST#/weekly-off/create' => ['WeeklyOffController', 'create'],
-        'PATCH#/weekly-off/update/(?P<id>[^/]+)' => ['WeeklyOffController', 'update'],
+        'PUT#/weekly-off/update/(?P<id>[^/]+)' => ['WeeklyOffController', 'update'],
+        // 'PATCH#/weekly-off/update/(?P<id>[^/]+)' => ['WeeklyOffController', 'update'],
         'DELETE#/weekly-off/delete/(?P<id>[^/]+)' => ['WeeklyOffController', 'delete'],
         'GET#/weekly-off/assignDefaultTemplate/(?P<id>[^/]+)' => ['WeeklyOffController', 'assign_default_template'],
 
@@ -297,7 +299,8 @@ try {
         'GET#/holidayTemplates/get/all/(?P<id>\d+)' => ['HolidayTemplatesController', 'get_all_holiday_templates_by_company_id'],
         'GET#/holidayTemplates/get/(?P<id>\d+)' => ['HolidayTemplatesController', 'get_holiday_template'],
         'POST#/holidayTemplates/create' => ['HolidayTemplatesController', 'create_holiday_template'],
-        'PATCH#/holidayTemplates/update/(?P<id>\d+)' => ['HolidayTemplatesController', 'update_holiday_template'],
+        'PUT#/holidayTemplates/update/(?P<id>\d+)' => ['HolidayTemplatesController', 'update_holiday_template'],
+        // 'PATCH#/holidayTemplates/update/(?P<id>\d+)' => ['HolidayTemplatesController', 'update_holiday_template'],
         'DELETE#/holidayTemplates/delete/(?P<id>\d+)' => ['HolidayTemplatesController', 'delete_holiday_template'],
         'POST#/holidayTemplates/assignEmployees' => ['HolidayTemplatesController', 'assign_employees'],
 
@@ -312,7 +315,8 @@ try {
         'GET#/overtimerules/getAllOvertimeRules/(?P<id>[^/]+)' => ['OvertimeRulesController', 'get_all_overtime_rules'],
         'GET#/overtimerules/getOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'get_overtime_rule'],
         'POST#/overtimerules/createOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'create_overtime_rule'],
-        'PATCH#/overtimerules/updateOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'update_overtime_rule'],
+        'PUT#/overtimerules/updateOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'update_overtime_rule'],
+        // 'PATCH#/overtimerules/updateOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'update_overtime_rule'],
         'DELETE#/overtimerules/deleteOvertimeRule/(?P<id>[^/]+)' => ['OvertimeRulesController', 'delete_overtime_rule'],
 
         // Attendance Penalty Rules
@@ -417,6 +421,6 @@ try {
         "status" => "failure"
     ]);
     exit;
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     ExceptionHandler::handle($e);
 }

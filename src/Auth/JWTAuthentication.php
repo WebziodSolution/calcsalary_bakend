@@ -31,7 +31,8 @@ class JWTAuthentication {
             '/^\/companyDetails\/create/',
             '/^\/api\/schema/',
             '/^\/state/',
-            '/^\/country/'
+            '/^\/country/',
+            '/^\/companyEmployee\/getAllCompanyEmployee/'
         ];
 
         foreach ($public_patterns as $pattern) {

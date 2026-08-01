@@ -16,14 +16,14 @@ class CompanyShiftService {
             }
 
             $dto = new CompanyShiftSerializer();
-            $dto->id = $shift->id;
-            $dto->companyId = $shift->companyDetails;
+            $dto->id = $shift->id !== null ? (int)$shift->id : null;
+            $dto->companyId = $shift->companyDetails !== null ? (int)$shift->companyDetails : null;
             $dto->shiftName = $shift->shiftName;
             $dto->shiftType = $shift->shiftType;
-            $dto->startTime = $shift->startTime;
-            $dto->endTime = $shift->endTime;
-            $dto->hours = $shift->hours;
-            $dto->totalHours = $shift->totalHours;
+            $dto->startTime = $shift->startTime !== null ? (float)$shift->startTime : null;
+            $dto->endTime = $shift->endTime !== null ? (float)$shift->endTime : null;
+            $dto->hours = $shift->hours !== null ? (float)$shift->hours : null;
+            $dto->totalHours = $shift->totalHours !== null ? (float)$shift->totalHours : null;
 
             return (array)$dto;
         } catch (Exception $e) {

@@ -15,10 +15,10 @@ class WeeklyOffService {
         $emp_user_name = $emp ? $emp->userName : null;
 
         return [
-            "id" => $w->id,
+            "id" => (int)$w->id,
             "name" => $w->name,
             "description" => $w->description,
-            "isDefault" => $w->isDefault,
+            "isDefault" => (int)$w->isDefault,
             "sundayAll" => (bool)$w->sundayAll,
             "sunday1st" => (bool)$w->sunday1st,
             "sunday2nd" => (bool)$w->sunday2nd,

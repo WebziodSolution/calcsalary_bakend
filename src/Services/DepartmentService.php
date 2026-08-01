@@ -16,8 +16,8 @@ class DepartmentService {
             }
 
             $dto = new DepartmentSerializer();
-            $dto->id = $dept->id;
-            $dto->companyId = $dept->companyDetails;
+            $dto->id = $dept->id !== null ? (int)$dept->id : null;
+            $dto->companyId = $dept->companyDetails !== null ? (int)$dept->companyDetails : null;
             $dto->departmentName = $dept->departmentName;
 
             return (array)$dto;

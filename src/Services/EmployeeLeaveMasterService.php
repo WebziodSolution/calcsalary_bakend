@@ -17,11 +17,11 @@ class EmployeeLeaveMasterService {
             }
 
             $dto = new EmployeeleavemasterSerializer();
-            $dto->id = $elm->id;
-            $dto->employeeId = $elm->companyEmployee;
-            $dto->leaveTypeId = $elm->leaveType;
-            $dto->totalLeave = $elm->totalLeave;
-            $dto->usedLeave = $elm->usedLeave;
+            $dto->id = $elm->id !== null ? (int)$elm->id : null;
+            $dto->employeeId = $elm->companyEmployee !== null ? (int)$elm->companyEmployee : null;
+            $dto->leaveTypeId = $elm->leaveType !== null ? (int)$elm->leaveType : null;
+            $dto->totalLeave = $elm->totalLeave !== null ? (int)$elm->totalLeave : null;
+            $dto->usedLeave = $elm->usedLeave !== null ? (int)$elm->usedLeave : null;
 
             return (array)$dto;
         } catch (Exception $e) {
@@ -36,7 +36,7 @@ class EmployeeLeaveMasterService {
             $stmt = $db->prepare("
                 SELECT elm.id 
                 FROM employee_leave_master elm
-                INNER JOIN company_employee ce ON elm.employee_id = ce.employee_id
+                INNER JOIN company_employees ce ON elm.employee_id = ce.id
                 WHERE ce.company_id = :comp_id
                 ORDER BY elm.id ASC
             ");

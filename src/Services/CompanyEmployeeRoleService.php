@@ -123,8 +123,8 @@ class CompanyEmployeeRoleService {
                 throw new Exception("Role not found");
             }
             return [
-                "roleId" => $role->roleId,
-                "companyId" => $role->companyDetails,
+                "roleId" => (int)$role->roleId,
+                "companyId" => (int)$role->companyDetails,
                 "roleName" => $role->roleName,
                 "rolesActions" => $this->get_policy($id)
             ];
@@ -238,10 +238,10 @@ class CompanyEmployeeRoleService {
 
             foreach ($functionality_list as $functionality) {
                 $modules = [];
-                $module_list = DbHelper::findAll(CompanyModules::class, "functionality_id = :func_id", ["func_id" => $functionality->id], "id ASC");
+                $module_list = DbHelper::findAll(CompanyModules::class, "functionality_id = :func_id", ["func_id" => (int)$functionality->id], "id ASC");
 
                 foreach ($module_list as $module) {
-                    $module_policies = DbHelper::findAll(CompanyModuleActions::class, "module_id = :mod_id", ["mod_id" => $module->moduleId]);
+                    $module_policies = DbHelper::findAll(CompanyModuleActions::class, "module_id = :mod_id", ["mod_id" => (int)$module->moduleId]);
                     $module_assigned_policy = [];
                     foreach ($module_policies as $mp) {
                         if ($mp->action !== null) {
@@ -273,7 +273,7 @@ class CompanyEmployeeRoleService {
                     }
 
                     $modules[] = [
-                        "moduleId" => $module->moduleId,
+                        "moduleId" => (int)$module->moduleId,
                         "moduleName" => $module->moduleName,
                         "moduleAssignedActions" => $module_assigned_policy,
                         "roleAssignedActions" => $role_assigned_policy
@@ -281,7 +281,7 @@ class CompanyEmployeeRoleService {
                 }
 
                 $functionalities[] = [
-                    "functionalityId" => $functionality->id,
+                    "functionalityId" => (int)$functionality->id,
                     "functionalityName" => $functionality->functionalityName,
                     "modules" => $modules
                 ];
@@ -331,12 +331,12 @@ class CompanyEmployeeRoleService {
                 if (!empty($role_assigned_actions)) {
                     foreach ($role_assigned_actions as $action_id) {
                         $module_policy = DbHelper::findFirst(CompanyModuleActions::class, "module_id = :mod_id AND action_id = :act_id", [
-                            "mod_id" => $module_id,
-                            "act_id" => $action_id
+                            "mod_id" => (int)$module_id,
+                            "act_id" => (int)$action_id
                         ]);
                         if ($module_policy) {
                             $rma = new CompanyRoleModuleActions();
-                            $rma->role = $role_id;
+                            $rma->role = (int)$role_id;
                             $rma->moduleActions = $module_policy->moduleActionId;
                             DbHelper::insert($rma);
                         }

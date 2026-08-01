@@ -28,7 +28,7 @@ class CompanyRoleActionService {
             }
             
             $dto = new CompanyActionsSerializer();
-            $dto->actionId = $action->actionId;
+            $dto->actionId = (int)$action->actionId;
             $dto->actionName = $action->actionName;
             return (array)$dto;
         } catch (Exception $e) {

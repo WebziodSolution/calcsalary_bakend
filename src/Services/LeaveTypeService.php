@@ -16,8 +16,8 @@ class LeaveTypeService {
             }
 
             $dto = new LeaveTypeSerializer();
-            $dto->id = $lt->id;
-            $dto->companyId = $lt->companyDetails;
+            $dto->id = (int)$lt->id;
+            $dto->companyId = (int)$lt->companyDetails;
             $dto->name = $lt->name;
 
             return (array)$dto;

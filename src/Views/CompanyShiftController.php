@@ -36,7 +36,7 @@ class CompanyShiftController {
         try {
             $input = array_merge($_GET, $_POST, json_decode(file_get_contents('php://input'), true) ?? []);
             $result = $this->service->create_shift($input);
-            return ApiResponse::send(200, "Shift details added successfully", $result);
+            return ApiResponse::send(201, "Shift details added successfully", $result);
         } catch (Exception $e) {
             return ApiResponse::send(500, $e->getMessage(), []);
         }

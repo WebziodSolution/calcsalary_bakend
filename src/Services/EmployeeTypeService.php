@@ -15,7 +15,7 @@ class EmployeeTypeService {
             }
 
             $dto = new EmployeeTypeSerializer();
-            $dto->id = $employee_type->id;
+            $dto->id = $employee_type->id !== null ? (int)$employee_type->id : null;
             $dto->name = $employee_type->name;
 
             return (array)$dto;

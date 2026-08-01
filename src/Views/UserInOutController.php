@@ -105,6 +105,28 @@ class UserInOutController {
         }
     }
 
+    private function normalize_query_value($value) {
+        if ($value === null || $value === '' || $value === 'undefined') {
+            return null;
+        }
+
+        if (is_array($value)) {
+            $flattened = [];
+            foreach ($value as $item) {
+                if (is_array($item)) {
+                    continue;
+                }
+                $item = trim((string)$item);
+                if ($item !== '') {
+                    $flattened[] = $item;
+                }
+            }
+            return !empty($flattened) ? implode(', ', $flattened) : null;
+        }
+
+        return trim((string)$value);
+    }
+
     public function get_all_records() {
         try {
             $input = array_merge($_GET, $_POST, json_decode(file_get_contents('php://input'), true) ?? []);
@@ -160,9 +182,9 @@ class UserInOutController {
                 }
             }
 
-            $start_date = $input['startDate'] ?? null;
-            $end_date = $input['endDate'] ?? null;
-            $time_zone = $input['timeZone'] ?? null;
+            $start_date = $this->normalize_query_value($input['startDate'] ?? null);
+            $end_date = $this->normalize_query_value($input['endDate'] ?? null);
+            $time_zone = $this->normalize_query_value($input['timeZone'] ?? null);
             $company_id = !empty($input['companyId']) ? (int)$input['companyId'] : null;
 
             $result = $this->service->get_all_entries_by_user_id($user_ids, $start_date, $end_date, $time_zone, $location_ids, $dept_ids, $company_id);
@@ -227,9 +249,9 @@ class UserInOutController {
                 }
             }
 
-            $start_date = $input['startDate'] ?? null;
-            $end_date = $input['endDate'] ?? null;
-            $time_zone = $input['timeZone'] ?? null;
+            $start_date = $this->normalize_query_value($input['startDate'] ?? null);
+            $end_date = $this->normalize_query_value($input['endDate'] ?? null);
+            $time_zone = $this->normalize_query_value($input['timeZone'] ?? null);
             $company_id = !empty($input['companyId']) ? (int)$input['companyId'] : null;
 
             $result = $this->service->get_all_records_grouped_by_user($user_ids, $start_date, $end_date, $time_zone, $location_ids, $dept_ids, $company_id);

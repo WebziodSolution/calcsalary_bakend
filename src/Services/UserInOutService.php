@@ -25,6 +25,35 @@ class UserInOutService {
         $this->common_service = new CommonService();
     }
 
+    private function resolve_time_zone($time_zone) {
+        $normalized = trim((string)($time_zone ?? ''));
+        if ($normalized === '') {
+            return 'UTC';
+        }
+
+        $aliases = [
+            'Asia/Calcutta' => 'Asia/Kolkata',
+            'asia/calcutta' => 'Asia/Kolkata',
+            'IST' => 'Asia/Kolkata'
+        ];
+
+        if (isset($aliases[$normalized])) {
+            $normalized = $aliases[$normalized];
+        }
+
+        try {
+            new DateTimeZone($normalized);
+            return $normalized;
+        } catch (Exception $e) {
+            try {
+                new DateTimeZone('Asia/Kolkata');
+                return 'Asia/Kolkata';
+            } catch (Exception $e2) {
+                return 'UTC';
+            }
+        }
+    }
+
     public function format_total_time($total_minutes) {
         $hours = (int)($total_minutes / 60);
         $minutes = $total_minutes % 60;
@@ -35,12 +64,33 @@ class UserInOutService {
         if ($date_str === null) {
             return null;
         }
+
+        $date_str = trim((string)$date_str);
+        if ($date_str === '') {
+            return null;
+        }
+
         if (strpos($date_str, ",") !== false) {
             $parts = explode(",", $date_str);
             $date_str = trim($parts[0]);
         }
-        $dt = DateTime::createFromFormat("d/m/Y", trim($date_str));
-        return $dt ? $dt : null;
+
+        $formats = [
+            '!d/m/Y',
+            '!Y-m-d',
+            'd/m/Y',
+            'Y-m-d'
+        ];
+
+        foreach ($formats as $format) {
+            $dt = DateTime::createFromFormat($format, $date_str);
+            if ($dt instanceof DateTime) {
+                $dt->setTime(0, 0, 0);
+                return $dt;
+            }
+        }
+
+        return null;
     }
 
     public function is_weekly_off_day(DateTime $date_obj, $weekly_off) {
@@ -145,7 +195,7 @@ class UserInOutService {
 
     public function get_all_records_grouped_by_user($user_ids, $start_date_str, $end_date_str, $time_zone, $location_ids, $department_ids, $company_id) {
         try {
-            $zone = new DateTimeZone($time_zone);
+            $zone = new DateTimeZone($this->resolve_time_zone($time_zone));
             $utc_zone = new DateTimeZone("UTC");
 
             if (!$start_date_str || !$end_date_str) {
@@ -277,7 +327,7 @@ class UserInOutService {
                 if ($user->companyDetails) {
                     $holiday_templates = DbHelper::findAll(HolidayTemplates::class, "company_id = :comp_id", ["comp_id" => $user->companyDetails]);
                     foreach ($holiday_templates as $template) {
-                        $details = DbHelper::findAll(HolidayTemplateDetails::class, "holiday_template = :template_id", ["template_id" => $template->id]);
+                        $details = DbHelper::findAll(HolidayTemplateDetails::class, "holiday_template_id = :template_id", ["template_id" => $template->id]);
                         foreach ($details as $detail) {
                             if ($detail->date) {
                                 if ($detail->date instanceof DateTime) {
@@ -499,7 +549,7 @@ class UserInOutService {
 
     public function get_all_entries_by_user_id($user_ids, $start_date_str, $end_date_str, $time_zone, $location_ids, $department_ids, $company_id) {
         try {
-            $zone = new DateTimeZone($time_zone);
+            $zone = new DateTimeZone($this->resolve_time_zone($time_zone));
             $utc_zone = new DateTimeZone("UTC");
 
             if (!$start_date_str || !$end_date_str) {
@@ -1426,7 +1476,7 @@ class UserInOutService {
 
                 $holiday_dates = [];
                 if ($company_employee->holidayTemplates) {
-                    $details = DbHelper::findAll(HolidayTemplateDetails::class, "holiday_template = :template_id", ["template_id" => $company_employee->holidayTemplates]);
+                    $details = DbHelper::findAll(HolidayTemplateDetails::class, "holiday_template_id = :template_id", ["template_id" => $company_employee->holidayTemplates]);
                     foreach ($details as $detail) {
                         if ($detail->date) {
                             if ($detail->date instanceof DateTime) {

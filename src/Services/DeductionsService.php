@@ -16,11 +16,11 @@ class DeductionsService {
             }
 
             $dto = new DeductionsSerializer();
-            $dto->id = $deductions->id;
-            $dto->employeeId = $deductions->companyEmployee;
+            $dto->id = (int)$deductions->id;
+            $dto->employeeId = (int)$deductions->companyEmployee;
             $dto->type = $deductions->type;
             $dto->label = $deductions->label;
-            $dto->amount = $deductions->amount;
+            $dto->amount = (int)$deductions->amount;
 
             return (array)$dto;
         } catch (Exception $e) {

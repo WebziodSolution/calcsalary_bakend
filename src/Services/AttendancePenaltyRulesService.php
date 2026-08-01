@@ -120,7 +120,7 @@ class AttendancePenaltyRulesService {
     public function update($id, $dto) {
         try {
             $rule_name = $dto['ruleName'] ?? null;
-            $company_id = $dto['companyId'] ?? null;
+            $company_id = (int)$dto['companyId'] ?? null;
             $is_early_exit = isset($dto['isEarlyExit']) ? (bool)$dto['isEarlyExit'] : false;
             $minutes = $dto['minutes'] ?? null;
 
@@ -155,7 +155,7 @@ class AttendancePenaltyRulesService {
             }
 
             // Find employee (createdBy)
-            $created_by = $dto['createdBy'] ?? null;
+            $created_by = (int)$dto['createdBy'] ?? null;
             if ($created_by) {
                 $employee = DbHelper::findById(CompanyEmployee::class, $created_by);
                 if (!$employee) {

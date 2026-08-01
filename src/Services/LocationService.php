@@ -25,7 +25,7 @@ class LocationService {
         }
 
         $dto = new LocationSerializer();
-        $dto->id = $loc->id;
+        $dto->id = $loc->id !== null ? (int)$loc->id : null;
         $dto->locationName = $loc->locationName;
         $dto->city = $loc->city;
         $dto->state = $loc->state;
@@ -34,10 +34,10 @@ class LocationService {
         $dto->address2 = $loc->address2;
         $dto->employeeCount = $loc->employeeCount;
         $dto->zipCode = $loc->zipCode;
-        $dto->companyId = $loc->companyDetails;
+        $dto->companyId = $loc->companyDetails !== null ? (int)$loc->companyDetails : null;
         $dto->externalId = $loc->externalId;
         $dto->geofenceId = $loc->geofenceId;
-        $dto->isActive = $loc->isActive;
+        $dto->isActive = $loc->isActive !== null ? (int)$loc->isActive : null;
         $dto->payPeriod = $loc->payPeriod;
         $dto->payPeriodStart = $pay_period_start_str;
         $dto->payPeriodEnd = $pay_period_end_str;

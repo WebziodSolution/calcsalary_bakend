@@ -15,13 +15,13 @@ class OvertimeRulesService {
         }
 
         return [
-            "id" => $rule->id,
+            "id" => (int)$rule->id,
             "ruleName" => $rule->ruleName,
-            "otMinutes" => $rule->otMinutes,
-            "otAmount" => $rule->otAmount,
+            "otMinutes" => (int)$rule->otMinutes,
+            "otAmount" => (float)$rule->otAmount,
             "otType" => $rule->otType,
-            "companyId" => $rule->companyDetails,
-            "createdBy" => $rule->companyEmployee,
+            "companyId" => (int)$rule->companyDetails,
+            "createdBy" => (int)$rule->companyEmployee,
             "createdByUserName" => $employee ? $employee->userName : null
         ];
     }
