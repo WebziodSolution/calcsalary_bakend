@@ -4,9 +4,47 @@ namespace Common\Services;
 use Common\Models\CompanyShift;
 use Common\Models\CompanyDetails;
 use Common\Serializers\CompanyShiftSerializer;
+use DateTime;
+use DateTimeZone;
 use Exception;
 
 class CompanyShiftService {
+
+    private function convertTimeToUtc($value) {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $sourceTz = new DateTimeZone('Asia/Kolkata');
+        $targetTz = new DateTimeZone('UTC');
+
+        if ($value instanceof \DateTimeInterface) {
+            $dateTime = new DateTime($value->format('Y-m-d H:i:s'), $sourceTz);
+        } else {
+            $dateTime = new DateTime($value, $sourceTz);
+        }
+
+        $dateTime->setTimezone($targetTz);
+        return $dateTime->format('Y-m-d H:i:s');
+    }
+
+    private function convertTimeToIst($value) {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $sourceTz = new DateTimeZone('UTC');
+        $targetTz = new DateTimeZone('Asia/Kolkata');
+
+        if ($value instanceof \DateTimeInterface) {
+            $dateTime = new DateTime($value->format('Y-m-d H:i:s'), $sourceTz);
+        } else {
+            $dateTime = new DateTime($value, $sourceTz);
+        }
+
+        $dateTime->setTimezone($targetTz);
+        return $dateTime->format('Y-m-d H:i:s');
+    }
     
     public function get_shift_by_id($id) {
         try {
@@ -20,8 +58,8 @@ class CompanyShiftService {
             $dto->companyId = $shift->companyDetails !== null ? (int)$shift->companyDetails : null;
             $dto->shiftName = $shift->shiftName;
             $dto->shiftType = $shift->shiftType;
-            $dto->startTime = $shift->startTime !== null ? (float)$shift->startTime : null;
-            $dto->endTime = $shift->endTime !== null ? (float)$shift->endTime : null;
+            $dto->startTime = $shift->startTime !== null ? $this->convertTimeToIst($shift->startTime) : null;
+            $dto->endTime = $shift->endTime !== null ? $this->convertTimeToIst($shift->endTime) : null;
             $dto->hours = $shift->hours !== null ? (float)$shift->hours : null;
             $dto->totalHours = $shift->totalHours !== null ? (float)$shift->totalHours : null;
 
@@ -56,8 +94,8 @@ class CompanyShiftService {
             $shift->companyDetails = $company_id;
             $shift->shiftName = $company_shift_dto['shiftName'] ?? null;
             $shift->shiftType = $company_shift_dto['shiftType'] ?? null;
-            $shift->startTime = $company_shift_dto['startTime'] ?? null;
-            $shift->endTime = $company_shift_dto['endTime'] ?? null;
+            $shift->startTime = $this->convertTimeToUtc($company_shift_dto['startTime'] ?? null);
+            $shift->endTime = $this->convertTimeToUtc($company_shift_dto['endTime'] ?? null);
             $shift->hours = $company_shift_dto['hours'] ?? null;
             $shift->totalHours = $company_shift_dto['totalHours'] ?? null;
 
@@ -84,8 +122,8 @@ class CompanyShiftService {
             $shift->companyDetails = $company_id;
             $shift->shiftName = $company_shift_dto['shiftName'] ?? null;
             $shift->shiftType = $company_shift_dto['shiftType'] ?? null;
-            $shift->startTime = $company_shift_dto['startTime'] ?? null;
-            $shift->endTime = $company_shift_dto['endTime'] ?? null;
+            $shift->startTime = $this->convertTimeToUtc($company_shift_dto['startTime'] ?? null);
+            $shift->endTime = $this->convertTimeToUtc($company_shift_dto['endTime'] ?? null);
             $shift->hours = $company_shift_dto['hours'] ?? null;
             $shift->totalHours = $company_shift_dto['totalHours'] ?? null;
 
