@@ -52,25 +52,26 @@ class EmployeeBankAccountInfoService {
 
     public function create_bank_account_info($dto) {
         try {
-            $employee_id = $dto['employeeId'] ?? null;        
-            if ($employee_id) {
-                $employee = DbHelper::findById(CompanyEmployee::class, $employee_id);                
-                if (!$employee) {
-                    throw new Exception("Employee not found");
-                }
-                $entity = new EmployeeBackAccountInfo();
-                $entity->companyEmployee = $employee_id;
-                $entity->accountType = $dto['accountType'] ?? null;
-                $entity->ifscCode = $dto['ifscCode'] ?? null;
-                $entity->bankName = $dto['bankName'] ?? null;
-                $entity->branch = $dto['branch'] ?? null;
-                $entity->accountNumber = $dto['accountNumber'] ?? null;
-                $entity->address = $dto['address'] ?? null;
-                $entity->passbookImage = $dto['passbookImage'] ?? "";
-                $entity->is_cash = $dto['is_cash'] ?? false;                
-                $entity = DbHelper::insert($entity);
-                return $this->get_bank_account_info_by_id($entity->id);
+            $employee_id = $dto['employeeId'] ?? $dto['employee_id'] ?? null;        
+            if (!$employee_id) {
+                throw new Exception("Employee ID is required");
             }
+            $employee = DbHelper::findById(CompanyEmployee::class, $employee_id);                
+            if (!$employee) {
+                throw new Exception("Employee not found");
+            }
+            $entity = new EmployeeBackAccountInfo();
+            $entity->companyEmployee = $employee_id;
+            $entity->accountType = $dto['accountType'] ?? null;
+            $entity->ifscCode = $dto['ifscCode'] ?? null;
+            $entity->bankName = $dto['bankName'] ?? null;
+            $entity->branch = $dto['branch'] ?? null;
+            $entity->accountNumber = $dto['accountNumber'] ?? null;
+            $entity->address = $dto['address'] ?? null;
+            $entity->passbookImage = $dto['passbookImage'] ?? "";
+            $entity->is_cash = $dto['is_cash'] ?? false;                
+            $entity = DbHelper::insert($entity);
+            return $this->get_bank_account_info_by_id($entity->id);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

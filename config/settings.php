@@ -4,7 +4,7 @@
  */
 
 // Choose Environment: 'local' or 'prod'
-$env = 'demo'; // Options: local, prod
+$env = 'local'; // Options: local, prod
 
 $settings = [
     'local' => [
