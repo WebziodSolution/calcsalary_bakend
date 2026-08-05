@@ -11,4 +11,5 @@ class EmployeeBackAccountInfoSerializer {
     public $address;
     public $employeeId;
     public $passbookImage;
+    public $is_cash;
 }

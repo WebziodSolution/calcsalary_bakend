@@ -1,0 +1,1 @@
+ALTER TABLE `employee_backaccount_info` ADD `is_cash` BOOLEAN NULL DEFAULT FALSE AFTER `address`;

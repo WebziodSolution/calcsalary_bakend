@@ -390,12 +390,14 @@ class CompanyEmployeeService {
                 }
             }
 
-            $is_exists = DbHelper::findFirst(CompanyEmployee::class, "company_id = :company_id AND user_name = :username", [
-                "company_id" => $company_id,
-                "username" => $dto['userName']                  
-            ]);
-            if ($is_exists && $is_exists->employeeId != $id) {
-                throw new Exception("User name is already taken");
+            if (isset($dto['userName']) && strcasecmp($dto['userName'], $employee->userName) !== 0) {
+                $is_exists = DbHelper::findFirst(CompanyEmployee::class, "company_id = :company_id AND user_name = :username", [
+                    "company_id" => $company_id,
+                    "username" => $dto['userName']                  
+                ]);
+                if ($is_exists && (int)$is_exists->employeeId != (int)$id) {
+                    throw new Exception("User name is already taken");
+                }
             }
 
             if (!empty($dto['hiredDate'])) {

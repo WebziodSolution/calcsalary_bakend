@@ -410,7 +410,7 @@ class UserService {
                                     }
                                 }
                             } else {
-                                $res_body["error"] = "Login failed due to internal error.";
+                                $res_body["error"] = "Login failed due to internal server error.";
                                 return $res_body;
                             }
                         }

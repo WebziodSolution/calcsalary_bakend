@@ -11,6 +11,7 @@ class EmployeeBackAccountInfo {
     public $address;
     public $passbookImage;
     public $companyEmployee;
+    public $is_cash;
 
     public static $tableName = 'employee_backaccount_info';
     public static $fieldsMap = [
@@ -23,5 +24,6 @@ class EmployeeBackAccountInfo {
         'address' => 'address',
         'passbookImage' => 'passbook_image',
         'companyEmployee' => 'employee_id',
+        'is_cash' => 'is_cash',
     ];
 }

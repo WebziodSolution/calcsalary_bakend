@@ -30,7 +30,7 @@ class EmployeeBankAccountInfoService {
             $dto->address = $entity->address;
             $dto->employeeId = $entity->companyEmployee;
             $dto->passbookImage = $entity->passbookImage;
-
+            $dto->is_cash = $entity->is_cash == 1;
             return (array)$dto;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -52,24 +52,25 @@ class EmployeeBankAccountInfoService {
 
     public function create_bank_account_info($dto) {
         try {
-            $employee_id = $dto['employeeId'] ?? null;
-            $employee = DbHelper::findById(CompanyEmployee::class, $employee_id);
-            if (!$employee) {
-                throw new Exception("Employee not found");
+            $employee_id = $dto['employeeId'] ?? null;        
+            if ($employee_id) {
+                $employee = DbHelper::findById(CompanyEmployee::class, $employee_id);                
+                if (!$employee) {
+                    throw new Exception("Employee not found");
+                }
+                $entity = new EmployeeBackAccountInfo();
+                $entity->companyEmployee = $employee_id;
+                $entity->accountType = $dto['accountType'] ?? null;
+                $entity->ifscCode = $dto['ifscCode'] ?? null;
+                $entity->bankName = $dto['bankName'] ?? null;
+                $entity->branch = $dto['branch'] ?? null;
+                $entity->accountNumber = $dto['accountNumber'] ?? null;
+                $entity->address = $dto['address'] ?? null;
+                $entity->passbookImage = $dto['passbookImage'] ?? "";
+                $entity->is_cash = $dto['is_cash'] ?? false;                
+                $entity = DbHelper::insert($entity);
+                return $this->get_bank_account_info_by_id($entity->id);
             }
-
-            $entity = new EmployeeBackAccountInfo();
-            $entity->companyEmployee = $employee_id;
-            $entity->accountType = $dto['accountType'] ?? null;
-            $entity->ifscCode = $dto['ifscCode'] ?? null;
-            $entity->bankName = $dto['bankName'] ?? null;
-            $entity->branch = $dto['branch'] ?? null;
-            $entity->accountNumber = $dto['accountNumber'] ?? null;
-            $entity->address = $dto['address'] ?? null;
-            $entity->passbookImage = $dto['passbookImage'] ?? "";
-
-            $entity = DbHelper::insert($entity);
-            return $this->get_bank_account_info_by_id($entity->id);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -98,6 +99,7 @@ class EmployeeBankAccountInfoService {
             if (isset($dto['passbookImage'])) {
                 $entity->passbookImage = $dto['passbookImage'];
             }
+            $entity->is_cash = $dto['is_cash'] ?? false;
 
             DbHelper::update($entity);
             return $this->get_bank_account_info_by_id($entity->id);
