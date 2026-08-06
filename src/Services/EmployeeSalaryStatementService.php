@@ -239,13 +239,14 @@ class EmployeeSalaryStatementService {
 
         // Overtime & Deductions
         $employee_shift_hours = ($shift && $shift->totalHours !== null) ? (float)$shift->totalHours : 0.0;
-        $total_worked_minutes = (int)($total_worked_millis / (1000 * 60));
-        
-        $lunch_break_minutes = $company_employee->lunchBreak !== null ? (int)$company_employee->lunchBreak : 0;
-        $lunch_deduction = count($actual_work_days) * $lunch_break_minutes;
-        $net_worked_minutes = $total_worked_minutes - $lunch_deduction;
         $shift_minutes = $employee_shift_hours * 60.0;
-        $ot_final_minutes = (int)max($net_worked_minutes - $shift_minutes, 0);
+        
+        $ot_final_minutes = 0;
+        foreach ($actual_work_days as $date_val) {
+            $worked_min = $daily_worked_minutes[$date_val] ?? 0;
+            $daily_ot = max(0, $worked_min - $shift_minutes);
+            $ot_final_minutes += $daily_ot;
+        }
         
         $ot_amount_final = 0;
         $employee_type_id = null;
@@ -264,7 +265,7 @@ class EmployeeSalaryStatementService {
         }
 
         if ($employee_type_id !== 2) {
-            $ot_amount_final = $this->calculate_overtime_amount($company_employee, $ot_final_minutes);
+            $ot_amount_final = $this->calculate_overtime_amount($company_employee, $daily_worked_minutes, $actual_work_days, $shift);
         }
 
         // Earnings
@@ -484,8 +485,8 @@ class EmployeeSalaryStatementService {
         return false;
     }
 
-    public function calculate_overtime_amount(CompanyEmployee $employee, $ot_minutes) {
-        if ($ot_minutes <= 0 || !$employee->overtimeRules) {
+    public function calculate_overtime_amount(CompanyEmployee $employee, array $daily_worked_minutes, array $actual_work_days, $shift) {
+        if (!$employee->overtimeRules) {
             return 0;
         }
 
@@ -510,7 +511,6 @@ class EmployeeSalaryStatementService {
         }
 
         if ($employee_type_id === 2 && $employee->hourlyRate !== null) {
-            $shift = $employee->companyShift ? DbHelper::findById(CompanyShift::class, $employee->companyShift) : null;
             $shift_hours = ($shift && $shift->totalHours !== null) ? (float)$shift->totalHours : 0.0;
             $daily_salary = (int)($shift_hours * (float)$employee->hourlyRate);
         } else {
@@ -519,24 +519,33 @@ class EmployeeSalaryStatementService {
         }
 
         $ot_type = $rule->otType ? strtolower(trim($rule->otType)) : "";
-        if ($ot_type === "fixed amount") {
-            return (int)$ot_pay_per_slab;
-        } else if ($ot_type === "fixed amount per hour") {
-            $ot_hours = (int)ceil($ot_minutes / 60.0);
-            return (int)($ot_hours * $ot_pay_per_slab);
-        } else if ($ot_type === "1 day salary") {
-            return $daily_salary;
-        } else if ($ot_type === "1.5 day salary") {
-            return (int)round($daily_salary * 1.5);
-        } else if ($ot_type === "2 day salary") {
-            return $daily_salary * 2;
-        } else if ($ot_type === "2.5 day salary") {
-            return (int)round($daily_salary * 2.5);
-        } else if ($ot_type === "3 day salary") {
-            return $daily_salary * 3;
-        } else {
-            return 0;
+        $shift_minutes = ($shift && $shift->totalHours !== null) ? (float)$shift->totalHours * 60.0 : 0.0;
+
+        $total_ot_amount = 0;
+        foreach ($actual_work_days as $date_val) {
+            $worked_min = $daily_worked_minutes[$date_val] ?? 0;
+            $daily_ot_minutes = max(0, $worked_min - $shift_minutes);
+            if ($daily_ot_minutes <= 0) {
+                continue;
+            }
+
+            if ($ot_type === "fixed amount" || $ot_type === "fixed amount per hour") {
+                $ot_hours = (int)ceil($daily_ot_minutes / 60.0);
+                $total_ot_amount += (int)($ot_hours * $ot_pay_per_slab);
+            } else if ($ot_type === "1 day salary") {
+                $total_ot_amount += $daily_salary;
+            } else if ($ot_type === "1.5 day salary") {
+                $total_ot_amount += (int)round($daily_salary * 1.5);
+            } else if ($ot_type === "2 day salary") {
+                $total_ot_amount += $daily_salary * 2;
+            } else if ($ot_type === "2.5 day salary") {
+                $total_ot_amount += (int)round($daily_salary * 2.5);
+            } else if ($ot_type === "3 day salary") {
+                $total_ot_amount += $daily_salary * 3;
+            }
         }
+
+        return $total_ot_amount;
     }
 
     public function calculate_canteen_deductions(CompanyEmployee $employee, $daily_worked_minutes, $work_days) {
@@ -604,16 +613,27 @@ class EmployeeSalaryStatementService {
         $actual_in->setTimezone($tz);
         
         $raw_start_str = $shift->startTime;
-        $raw_start = "00:00:00";
         if ($raw_start_str) {
-            $raw_start = trim($raw_start_str);
-            if (strpos($raw_start, ' ') !== false) {
-                $parts = explode(' ', $raw_start);
-                $raw_start = end($parts);
+            try {
+                $utc_tz = new \DateTimeZone("UTC");
+                if (strlen(trim($raw_start_str)) > 8) {
+                    $expected_start = new DateTime($raw_start_str, $utc_tz);
+                } else {
+                    $expected_start = new DateTime($actual_in->format("Y-m-d ") . trim($raw_start_str), $utc_tz);
+                }
+                $expected_start->setTimezone($tz);
+                $expected_start->setDate(
+                    (int)$actual_in->format("Y"),
+                    (int)$actual_in->format("m"),
+                    (int)$actual_in->format("d")
+                );
+            } catch (Exception $e) {
+                $expected_start = new DateTime($actual_in->format("Y-m-d ") . "00:00:00", $tz);
             }
+        } else {
+            $expected_start = new DateTime($actual_in->format("Y-m-d ") . "00:00:00", $tz);
         }
 
-        $expected_start = new DateTime($actual_in->format("Y-m-d ") . $raw_start, $tz);
         $late_minutes = (int)(($actual_in->getTimestamp() - $expected_start->getTimestamp()) / 60);
         
         if ($late_minutes <= 0) {
@@ -641,16 +661,27 @@ class EmployeeSalaryStatementService {
         $actual_out->setTimezone($tz);
         
         $raw_end_str = $shift->endTime;
-        $raw_end = "00:00:00";
         if ($raw_end_str) {
-            $raw_end = trim($raw_end_str);
-            if (strpos($raw_end, ' ') !== false) {
-                $parts = explode(' ', $raw_end);
-                $raw_end = end($parts);
+            try {
+                $utc_tz = new \DateTimeZone("UTC");
+                if (strlen(trim($raw_end_str)) > 8) {
+                    $expected_end = new DateTime($raw_end_str, $utc_tz);
+                } else {
+                    $expected_end = new DateTime($actual_out->format("Y-m-d ") . trim($raw_end_str), $utc_tz);
+                }
+                $expected_end->setTimezone($tz);
+                $expected_end->setDate(
+                    (int)$actual_out->format("Y"),
+                    (int)$actual_out->format("m"),
+                    (int)$actual_out->format("d")
+                );
+            } catch (Exception $e) {
+                $expected_end = new DateTime($actual_out->format("Y-m-d ") . "00:00:00", $tz);
             }
+        } else {
+            $expected_end = new DateTime($actual_out->format("Y-m-d ") . "00:00:00", $tz);
         }
 
-        $expected_end = new DateTime($actual_out->format("Y-m-d ") . $raw_end, $tz);
         $early_minutes = (int)(($expected_end->getTimestamp() - $actual_out->getTimestamp()) / 60);
         
         if ($early_minutes <= 0) {
@@ -689,10 +720,10 @@ class EmployeeSalaryStatementService {
             return 0;
         }
 
-        return $this->compute_penalty($chosen_rule, $day_salary, $total_hours);
+        return $this->compute_penalty($chosen_rule, $day_salary, $total_hours, $diff_minutes);
     }
 
-    public function compute_penalty(AttendancePenaltyRules $rule, $day_salary, $total_hours) {
+    public function compute_penalty(AttendancePenaltyRules $rule, $day_salary, $total_hours, $diff_minutes = 0) {
         if (!$total_hours || $total_hours <= 0) {
             $total_hours = 8.0;
         }
@@ -710,16 +741,12 @@ class EmployeeSalaryStatementService {
 
         $deduction_type = trim($deduction_type);
 
+        $penalty_hours = $diff_minutes > 0 ? (int)ceil($diff_minutes / 60.0) : 1;
+
         if ($deduction_type === "Fixed Amount") {
-            return $rule->amount !== null ? (int)$rule->amount : 0;
-        } else if ($deduction_type === "5 Min Salary") {
-            return (int)round($per_minute_salary * 5);
-        } else if ($deduction_type === "15 Min Salary") {
-            return (int)round($per_minute_salary * 15);
-        } else if ($deduction_type === "30 Min Salary") {
-            return (int)round($per_minute_salary * 30);
-        } else if ($deduction_type === "1 Hour Salary") {
-            return (int)round($per_hour_salary);
+            return $penalty_hours * ($rule->amount !== null ? (int)$rule->amount : 0);
+        } else if ($deduction_type === "5 Min Salary" || $deduction_type === "15 Min Salary" || $deduction_type === "30 Min Salary" || $deduction_type === "1 Hour Salary") {
+            return $penalty_hours * (int)round($per_hour_salary);
         } else if ($deduction_type === "Half Day Salary") {
             return (int)floor($day_salary / 2);
         } else if ($deduction_type === "1 Day Salary") {
