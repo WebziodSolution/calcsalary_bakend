@@ -173,14 +173,50 @@ class UserInOutService {
             $stmt->execute(['comp_id' => $company_id, 'start_day' => $start_of_day, 'end_day' => $end_of_day]);
             $count_checked_out = (int)$stmt->fetch(PDO::FETCH_ASSOC)['cnt'];
 
-            $stmt = $db->prepare("SELECT COUNT(*) as cnt FROM company_employees WHERE company_id = :comp_id AND is_active = 1");
+            $stmt = $db->prepare("SELECT COUNT(*) as cnt FROM company_employees WHERE company_id = :comp_id");
             $stmt->execute(['comp_id' => $company_id]);
             $total_users = (int)$stmt->fetch(PDO::FETCH_ASSOC)['cnt'];
+
+            $stmt = $db->prepare("
+                SELECT DISTINCT ce.id, 
+                       CONCAT(ce.first_name, CASE WHEN ce.middle_name IS NOT NULL AND TRIM(ce.middle_name) != '' THEN CONCAT(' ', TRIM(ce.middle_name)) ELSE '' END, ' ', ce.last_name) AS fullname 
+                FROM user_inout uio 
+                JOIN company_employees ce ON uio.user_id = ce.id 
+                WHERE uio.company_id = :comp_id 
+                  AND uio.time_in >= :start_day 
+                  AND uio.time_in <= :end_day
+            ");
+            $stmt->execute(['comp_id' => $company_id, 'start_day' => $start_of_day, 'end_day' => $end_of_day]);
+            $in_users_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $stmt = $db->prepare("
+                SELECT DISTINCT ce.id, 
+                       CONCAT(ce.first_name, CASE WHEN ce.middle_name IS NOT NULL AND TRIM(ce.middle_name) != '' THEN CONCAT(' ', TRIM(ce.middle_name)) ELSE '' END, ' ', ce.last_name) AS fullname 
+                FROM user_inout uio 
+                JOIN company_employees ce ON uio.user_id = ce.id 
+                WHERE uio.company_id = :comp_id 
+                  AND uio.time_out >= :start_day 
+                  AND uio.time_out <= :end_day
+            ");
+            $stmt->execute(['comp_id' => $company_id, 'start_day' => $start_of_day, 'end_day' => $end_of_day]);
+            $out_users_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $stmt = $db->prepare("
+                SELECT id, 
+                       CONCAT(first_name, CASE WHEN middle_name IS NOT NULL AND TRIM(middle_name) != '' THEN CONCAT(' ', TRIM(middle_name)) ELSE '' END, ' ', last_name) AS fullname 
+                FROM company_employees 
+                WHERE company_id = :comp_id                 
+            ");
+            $stmt->execute(['comp_id' => $company_id]);
+            $total_users_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return [
                 "countCheckedInUsers" => $count_checked_in,
                 "countCheckedOutUsers" => $count_checked_out,
-                "companyTotalUserCount" => $total_users
+                "companyTotalUserCount" => $total_users,
+                "inUsersData" => $in_users_data,
+                "outUserData" => $out_users_data,
+                "totalUserData" => $total_users_data
             ];
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
