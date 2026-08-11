@@ -27,9 +27,7 @@ $settings = [
         'mail_from' => 'webzoidsolution@gmail.com',
         'mail_from_name' => 'TimeSheetsPro-Support',
         
-        'restrict_ips' => true,
-        'allowed_client_ips' => ['127.0.0.1', '::1'],
-        'allowed_client_ip_prefixes' => ['192.168.1.']
+        'restrict_ips' => false,    
     ],
     'prod' => [
         'db_host' => '69.57.172.154',

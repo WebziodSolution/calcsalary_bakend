@@ -895,52 +895,11 @@ class UserInOutService {
         }
     }
 
-    public function handle_timeout_update(CompanyEmployee $employee, UserInOut $existing_record, DateTime $time_out, $location_id, $company_id) {
-        $auto_time_in_after = null;
-        if ($employee->companyDetails) {
-            $comp = DbHelper::findById(CompanyDetails::class, $employee->companyDetails);
-            $auto_time_in_after = ($comp && isset($comp->autoTimeInAfterHours)) ? $comp->autoTimeInAfterHours : null;
-        }
-
+    public function handle_timeout_update(CompanyEmployee $employee, UserInOut $existing_record, DateTime $time_out, $location_id = null, $company_id = null) {
         $time_out->setTimezone(new DateTimeZone("UTC"));
-
-        if (!$auto_time_in_after || trim($auto_time_in_after) === "") {
-            $existing_record->timeOut = $time_out;
-            DbHelper::update($existing_record);
-            return true;
-        }
-
-        $ist_zone = new DateTimeZone("Asia/Kolkata");
-        
-        $t_in_utc = $existing_record->timeIn instanceof DateTime ? $existing_record->timeIn : new DateTime($existing_record->timeIn, new DateTimeZone("UTC"));
-        $time_in_ist = clone $t_in_utc;
-        $time_in_ist->setTimezone($ist_zone);
-        
-        $time_out_ist = clone $time_out;
-        $time_out_ist->setTimezone($ist_zone);
-
-        $limit_hours = 0;
-        $limit_minutes = 0;
-        try {
-            $parts = explode(":", $auto_time_in_after);
-            $limit_hours = (int)$parts[0];
-            $limit_minutes = (int)$parts[1];
-        } catch (Exception $ex) {
-            // Ignore
-        }
-
-        $allowed_limit_seconds = ($limit_hours * 3600) + ($limit_minutes * 60);
-        $session_duration_seconds = $time_out_ist->getTimestamp() - $time_in_ist->getTimestamp();
-
-        if ($session_duration_seconds > $allowed_limit_seconds) {
-            $next_day_time_in = clone $time_out;
-            $this->create_user_inout($employee->employeeId, $location_id, $company_id, $next_day_time_in);
-            return true;
-        } else {
-            $existing_record->timeOut = $time_out;
-            DbHelper::update($existing_record);
-            return true;
-        }
+        $existing_record->timeOut = $time_out;
+        DbHelper::update($existing_record);
+        return true;
     }
 
     public function update_user_inout_by_id($id, $user_id) {
@@ -995,16 +954,59 @@ class UserInOutService {
                 throw new Exception("Employee not found");
             }
 
+            $username = $employee->userName ? $employee->userName : ($employee->firstName . " " . $employee->lastName);
+            $comp_id = $company_id ? $company_id : $employee->companyDetails;
+            $now = new DateTime("now", new DateTimeZone("UTC"));
+
             $existing = DbHelper::findFirst(UserInOut::class, "user_id = :user_id AND time_out IS NULL", ["user_id" => $user_id], "id DESC");
 
             if ($existing) {
-                $this->update_user_inout_by_id($existing->id, $user_id);
-                $username = $employee->userName ? $employee->userName : ($employee->firstName . " " . $employee->lastName);
-                return "updated:" . $username;
+                $is_timeout = true;
+
+                $auto_time_in_after = null;
+                if ($employee->companyDetails) {
+                    $comp = DbHelper::findById(CompanyDetails::class, $employee->companyDetails);
+                    $auto_time_in_after = ($comp && isset($comp->autoTimeInAfterHours)) ? $comp->autoTimeInAfterHours : null;
+                }
+
+                if ($auto_time_in_after && trim($auto_time_in_after) !== "") {
+                    $ist_zone = new DateTimeZone("Asia/Kolkata");
+
+                    $t_in_utc = $existing->timeIn instanceof DateTime ? $existing->timeIn : new DateTime($existing->timeIn, new DateTimeZone("UTC"));
+                    $time_in_ist = clone $t_in_utc;
+                    $time_in_ist->setTimezone($ist_zone);
+
+                    $now_ist = clone $now;
+                    $now_ist->setTimezone($ist_zone);
+
+                    $limit_hours = 0;
+                    $limit_minutes = 0;
+                    try {
+                        $parts = explode(":", $auto_time_in_after);
+                        $limit_hours = (int)($parts[0] ?? 0);
+                        $limit_minutes = (int)($parts[1] ?? 0);
+                    } catch (Exception $ex) {
+                        // Ignore
+                    }
+
+                    $allowed_limit_seconds = ($limit_hours * 3600) + ($limit_minutes * 60);
+                    $session_duration_seconds = $now_ist->getTimestamp() - $time_in_ist->getTimestamp();
+
+                    if ($session_duration_seconds > $allowed_limit_seconds) {
+                        $is_timeout = false;
+                    }
+                }
+
+                if ($is_timeout) {
+                    $existing->timeOut = $now;
+                    DbHelper::update($existing);
+                    return "updated:" . $username;
+                } else {
+                    $this->create_user_inout($user_id, $location_id, $comp_id, $now);
+                    return "created:" . $username;
+                }
             } else {
-                $now = new DateTime("now", new DateTimeZone("UTC"));
-                $this->create_user_inout($user_id, $location_id, $company_id, $now);
-                $username = $employee->userName ? $employee->userName : ($employee->firstName . " " . $employee->lastName);
+                $this->create_user_inout($user_id, $location_id, $comp_id, $now);
                 return "created:" . $username;
             }
         } catch (Exception $e) {
