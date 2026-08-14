@@ -454,7 +454,9 @@ class UserService {
                                 "profileImage" => $company_employee->profileImage,
                                 "companyId" => $company_details->id,
                                 "departmentName" => $dept_name,
-                                "themeId" => $theme_id
+                                "themeId" => $theme_id,
+                                "checkGeofence" => (int)($company_employee->checkGeofence ?? 0),
+                                "companyLocation" => $company_employee->companyLocation,
                             ];
 
                             $user_map = [

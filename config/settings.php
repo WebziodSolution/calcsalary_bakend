@@ -4,7 +4,7 @@
  */
 
 // Choose Environment: 'local' or 'prod'
-$env = 'local'; // Options: local, prod
+$env = 'prod'; // Options: local, prod
 
 $settings = [
     'local' => [
@@ -49,9 +49,9 @@ $settings = [
         'mail_from' => 'webzoidsolution@gmail.com',
         'mail_from_name' => 'Calcsalary-Support',
         
-        'restrict_ips' => true,
-        'allowed_client_ips' => ['127.0.0.1', '::1',"150.129.166.66"],
-        'allowed_client_ip_prefixes' => ['192.168.']
+        'restrict_ips' => false,
+        // 'allowed_client_ips' => ['127.0.0.1', '::1',"150.129.166.66"],
+        // 'allowed_client_ip_prefixes' => ['192.168.']
     ],
      'demo' => [
         'db_host' => '69.57.172.154',

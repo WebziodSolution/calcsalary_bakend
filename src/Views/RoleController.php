@@ -57,7 +57,7 @@ class RoleController {
         try {
             $role_id = (int)$roleId;
             $result = $this->service->getRoleById($role_id);
-            return ApiResponse::send(200, "Fetch role details successfully", $result);
+            return ApiResponse::send(200, "Fetch role details successfully",["role"=>$result]);
         } catch (Exception $e) {
             return ApiResponse::send(500, "Fail to fetch role details", []);
         }
